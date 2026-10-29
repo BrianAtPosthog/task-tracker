@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tasks</title>
+<link rel="stylesheet" href="app.css" />
+</head>
+<body>
+<div id="app">
+  <div id="titlebar" class="drag-region">
+    <span class="tb-box tb-close" title="Decorative. Real controls are in the corner."></span>
+    <span class="tb-stripes"></span>
+    <span class="tb-title">Tasks</span>
+    <span class="tb-stripes"></span>
+    <span class="tb-box tb-zoom"></span><span class="tb-box tb-collapse"></span>
+  </div>
+  <aside id="sidebar">
+    <div id="hero-bar"></div>
+    <nav>
+      <button data-view="focus" class="active" data-q="Town square">Today</button>
+      <button data-view="inbox" data-q="Quest board">Inbox <span class="badge" id="inbox-badge"></span></button>
+      <button data-view="owed" data-q="Villagers waiting">💸 You owe</button>
+      <button data-view="quick" data-q="Side quests">⚡ Quick wins</button>
+      <button data-view="deep" data-q="Main quests">⛏ Chip away</button>
+      <button data-view="list" data-q="Journal">All tasks</button>
+      <button data-view="calendar" data-q="Almanac">Calendar</button>
+      <button data-view="people" data-q="Party">People</button>
+      <button data-view="notes" data-q="Lore">Notes</button>
+      <button data-view="victory" data-q="Trophy room">🏆 Victory pile</button>
+      <button data-view="map" data-q="World map" class="quest-only">🗺 World map</button>
+    </nav>
+    <canvas id="confetti"></canvas>
+    <div class="side-section">
+      <h4>Projects</h4>
+      <div id="project-list"></div>
+    </div>
+    <div class="side-footer">
+      <button id="mode-btn" class="ghost" title="Switch between the list and the quest log">🗡 Quest mode</button>
+      <button id="theme-btn" class="ghost" title="Switch between Platinum and Night CRT">🖥 Night mode</button>
+      <button id="settings-btn" class="ghost">Connect Claude / ChatGPT</button>
+    </div>
+  </aside>
+
+  <main id="main">
+    <header id="topbar">
+      <input id="search" type="search" placeholder="Search tasks, notes, links…" />
+      <button id="new-task" class="primary">+ New task</button>
+    </header>
+    <section id="view"></section>
+  </main>
+
+  <aside id="detail" class="hidden"></aside>
+</div>
+
+<dialog id="task-dialog">
+  <form method="dialog" id="task-form">
+    <h3 id="task-form-title">New task</h3>
+    <label>Title <input name="title" required autofocus /></label>
+    <label>Description <textarea name="description" rows="3"></textarea></label>
+    <div class="row">
+      <label>Priority
+        <select name="priority">
+          <option value="1">1 · Urgent</option><option value="2">2 · High</option>
+          <option value="3" selected>3 · Normal</option><option value="4">4 · Low</option>
+        </select>
+      </label>
+      <label>Impact
+        <select name="impact">
+          <option value="1">1 · Tiny</option><option value="2">2 · Small</option>
+          <option value="3" selected>3 · Medium</option><option value="4">4 · Big</option><option value="5">5 · Huge</option>
+        </select>
+      </label>
+      <label>Status
+        <select name="status">
+          <option value="todo">To do</option><option value="in_progress">In progress</option>
+          <option value="blocked">Blocked</option><option value="done">Done</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <label>Effort
+        <select name="effort">
+          <option value="quick">⚡ Quick (under 20 min)</option><option value="medium" selected>Medium</option><option value="deep">⛏ Deep (chip away)</option>
+        </select>
+      </label>
+      <label>Next action
+        <select name="next_action">
+          <option value="">—</option><option value="slack_reply">Slack reply</option><option value="email_reply">Email reply</option>
+          <option value="creative_review">Creative review</option><option value="write">Write</option><option value="build">Build</option>
+          <option value="decide">Decide</option><option value="meeting">Meeting</option><option value="research">Research</option><option value="wait">Wait</option>
+        </select>
+      </label>
+      <label>Due <input name="due_date" type="date" /></label>
+    </div>
+    <div class="row">
+      <label>Project <input name="project" list="projects-dl" /></label>
+      <label>Tags <input name="tags" placeholder="comma, separated" /></label>
+    </div>
+    <div class="row">
+      <label>Channels to watch <input name="channels" placeholder="#team-growth, #ads" /></label>
+      <label>Skills needed <input name="skills" placeholder="bing-ads, self-driving-copy" /></label>
+    </div>
+    <label>Context <textarea name="context" rows="4" placeholder="Background, decisions so far, where things live. Markdown is fine. LLMs read this before starting."></textarea></label>
+    <div class="row">
+      <label>Repeats
+        <select name="freq">
+          <option value="">Never</option><option value="daily">Daily</option><option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option><option value="yearly">Yearly</option>
+        </select>
+      </label>
+      <label>Every <input name="interval" type="number" min="1" value="1" style="width:5em" /></label>
+      <label class="weekdays-label">On
+        <span class="weekdays">
+          <label><input type="checkbox" name="wd" value="1" />M</label><label><input type="checkbox" name="wd" value="2" />T</label>
+          <label><input type="checkbox" name="wd" value="3" />W</label><label><input type="checkbox" name="wd" value="4" />T</label>
+          <label><input type="checkbox" name="wd" value="5" />F</label><label><input type="checkbox" name="wd" value="6" />S</label>
+          <label><input type="checkbox" name="wd" value="0" />S</label>
+        </span>
+      </label>
+    </div>
+    <div class="row">
+      <label>Waiting on <input name="waiting_on" placeholder="names, comma separated" /></label>
+      <label>Collaborators <input name="collaborators" placeholder="names, comma separated" /></label>
+      <label>I owe <input name="owed_to" placeholder="people waiting on me" /></label>
+    </div>
+    <datalist id="projects-dl"></datalist>
+    <menu>
+      <button value="cancel" class="ghost" type="button" id="task-cancel">Cancel</button>
+      <button value="save" class="primary">Save</button>
+    </menu>
+  </form>
+</dialog>
+
+<dialog id="close-dialog">
+  <form method="dialog" id="close-form">
+    <h3>Closing notes</h3>
+    <p class="muted" id="close-title" style="margin:0 0 8px"></p>
+    <label>Why / how did it close? What shipped, what was decided, anything the next person should know.
+      <textarea name="closing_notes" rows="4" placeholder="e.g. Approved the three statics with one copy tweak; HEY launching Thursday. Field Guide art reused."></textarea></label>
+    <menu>
+      <button type="button" class="ghost" id="close-skip">Just mark done</button>
+      <button class="primary" value="save">Save &amp; mark done</button>
+    </menu>
+  </form>
+</dialog>
+
+<dialog id="settings-dialog">
+  <div class="settings">
+    <h3>Connect Claude and ChatGPT</h3>
+    <p>Your tasks live in <code id="s-datadir"></code>. Keep this app open while an assistant is using it.</p>
+
+    <h4>Claude Desktop or Claude Code (no tunnel needed)</h4>
+    <p>Add this to Claude Desktop's <code>claude_desktop_config.json</code> under <code>mcpServers</code>, or run the <code>claude mcp add</code> command below:</p>
+    <pre id="s-stdio"></pre>
+    <pre id="s-claude-cmd"></pre>
+
+    <h4>ChatGPT (through a Cloudflare tunnel)</h4>
+    <p>In a terminal, run:</p>
+    <pre id="s-tunnel"></pre>
+    <p>It prints an address like <code>https://xxxx.trycloudflare.com</code>. In ChatGPT, go to Settings → Connectors → Create, and paste that address followed by:</p>
+    <pre id="s-mcp-path"></pre>
+    <p>The same address also works in Claude's web/desktop "Custom connectors" if you'd rather not use the stdio setup.</p>
+    <p class="muted">The random token in the path is what keeps strangers out. Don't share it.</p>
+    <h4>Backups</h4>
+    <p>A snapshot of the database is saved once a day to <code id="s-backupdir"></code>, 30 days kept. <span id="s-backups"></span></p>
+    <menu><button class="primary" id="settings-close">Done</button></menu>
+  </div>
+</dialog>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

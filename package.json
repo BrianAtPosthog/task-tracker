@@ -1,0 +1,36 @@
+{
+  "name": "task-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local task tracker with an MCP server for Claude and ChatGPT",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "start": "node --no-warnings src/server.js",
+    "mcp:stdio": "node --no-warnings src/mcp-stdio.js",
+    "desktop": "electron .",
+    "test": "node --no-warnings --test test/*.test.js",
+    "postinstall": "node node_modules/electron/install.js",
+    "icons": "node scripts/make-icons.js",
+    "package": "node scripts/make-icons.js && electron-packager . Tasks --platform=darwin --arch=arm64 --out=dist --overwrite --icon=assets/icon.icns --ignore=\"^/(dist|test|outputs|\\.git)\" --app-bundle-id=com.brian.tasks"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.5",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "express": "^5.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "electron": "^45.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron"
+    ]
+  },
+  "productName": "Tasks"
+}
